@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f6f1"><meta name="description" content="积日 Piece Plus：3–15 分钟学习、思考、输出、复习。">
+<title>积日 · Piece Plus</title><link rel="stylesheet" href="./styles.css">
+</head><body>
+<div class="shell">
+<header class="top"><div class="brand"><div class="mark">积</div><div>积日 <small>PIECE PLUS · DAILY COMPOUND</small></div></div><span class="privacy">◎ 本机保存</span></header>
+<section class="intro"><div><span class="eyebrow">LEARN A LITTLE · THINK DEEPLY</span><h1>每天一点，<br>慢慢变成自己的知识。</h1><p>3–15 分钟读一点，写一点自己的理解，过几天再回头想一想。</p></div><div class="orb" aria-hidden="true">✳</div></section>
+<section class="stats" aria-label="学习统计"><div><b id="statLearn">0</b><span>已读学习卡</span></div><div><b id="statWrite">0</b><span>自己的输出</span></div><div><b id="statReview">0</b><span>待复习笔记</span></div></section>
+<nav class="tabs" aria-label="主导航">
+<button data-tab="learn" class="active">✧ 学习</button><button data-tab="write">✎ 输出</button><button data-tab="library">▤ 知识库</button><button data-tab="review">◷ 复习</button><button data-tab="settings">⚙ 备份</button>
+</nav>
+<main>
+<section id="page-learn" class="page active">
+<div class="sectionheading"><div><span class="eyebrow">DISCOVER</span><h2>今天学点什么？</h2></div><button class="btn subtle" id="surprise">随便来一张 ↻</button></div>
+<div class="filterbar"><select id="topicFilter" aria-label="学习领域"></select><div class="timeselect" id="timeFilter"><button data-time="3" class="active">3 分钟</button><button data-time="7">7 分钟</button><button data-time="15">15 分钟</button></div></div>
+<div id="lesson" class="lesson card"></div><div class="subheading">其他可以探索</div><div id="lessonList" class="lesson-list"></div>
+</section>
+<section id="page-write" class="page">
+<div class="sectionheading"><div><span class="eyebrow">CREATE</span><h2>把理解变成自己的话</h2></div></div>
+<div class="two-col"><div class="card">
+<form id="noteForm"><div class="choice" id="kindChoice"><button type="button" data-kind="explain" class="active">用我的话解释</button><button type="button" data-kind="example">举个自己的例子</button><button type="button" data-kind="question">提出一个问题</button></div>
+<label for="noteBody">我的理解 <em>*</em></label><textarea id="noteBody" required maxlength="8000" placeholder="我今天理解的是……"></textarea><p class="micro right" id="draftStatus">输入自动暂存到本机</p>
+<label for="noteTitle">给它一个名字 <span>（可选）</span></label><input id="noteTitle" maxlength="120" placeholder="例如：为什么沉没成本不应该影响决策？">
+<label for="noteTopic">领域</label><select id="noteTopic"></select>
+<label for="noteLesson">对应学习卡 <span>（可选）</span></label><select id="noteLesson"></select>
+<label for="noteSource">其他来源 <span>（可选）</span></label><input id="noteSource" maxlength="200" placeholder="某本书、文章或自己的想法">
+<div class="buttons"><button type="button" class="btn subtle hidden" id="cancelEdit">取消编辑</button><button class="btn primary" type="submit" id="saveNote">保存我的理解 →</button></div></form>
+</div><aside class="card side"><h3>不必写很长</h3><p>每次写两三句话，比只是把文章收藏起来更能帮助记忆。</p><div class="example"><b>例子 · 沉没成本</b><p>一条 MiniSky 航线即使已经花了很多资金建设，也应该根据未来的需求决定是否继续运营，而不是为了过去的投入继续亏损。</p></div><p>问自己：<b>「如果不用原文的措辞，我还能讲清楚吗？」</b></p></aside></div>
+</section>
+<section id="page-library" class="page"><div class="sectionheading"><div><span class="eyebrow">YOUR KNOWLEDGE</span><h2>我的知识库</h2></div><button class="btn subtle" id="exportTop">导出备份 ↓</button></div>
+<div class="card"><div class="filterbar"><input id="searchNotes" placeholder="搜索我写过的想法……"><select id="filterNotes" aria-label="筛选笔记领域"></select></div><div id="notesList"></div></div>
+</section>
+<section id="page-review" class="page"><div class="sectionheading"><div><span class="eyebrow">RECALL</span><h2>过几天，再想一想</h2></div></div><div class="card"><p class="muted">先遮住原答案，试着重新解释。记住了就延长复习间隔；还模糊则明天再看。</p><div id="reviewBox"></div></div></section>
+<section id="page-settings" class="page"><div class="sectionheading"><div><span class="eyebrow">OWN YOUR DATA</span><h2>备份与迁移</h2></div></div><div class="card"><h3>你的输出属于你</h3><p class="muted">当前不需要账号，也不会把私人笔记上传到 GitHub。所有内容保存在当前浏览器。换设备、换浏览器或清除站点数据后不会自动同步，请定期导出备份。</p><div class="buttons left"><button class="btn primary" id="exportData">导出 JSON 备份 ↓</button><button class="btn subtle" id="importButton">导入已有备份 ↑</button><input type="file" id="importFile" accept=".json,application/json" hidden></div><p class="micro" id="backupStatus"></p><div class="warning">支持从旧版「积日 · 输出簿」导出的 JSON 迁移。请先在旧网站导出，再在这里导入。导入时以笔记 ID 去重，不会覆盖同 ID 的现有笔记。</div></div><div class="card"><h3>下一步</h3><p class="muted">计划逐步引入可靠的云端同步、AI 对你自己答案的反馈和个性化推荐；当前版本尚未接入这些能力。</p></div></section>
+</main><footer>积日 · Piece Plus · 所有进步，都从一点点开始。</footer></div>
+<nav class="bottomnav" aria-label="手机导航"><button data-tab="learn" class="active"><span>✧</span>学习</button><button data-tab="write"><span>✎</span>输出</button><button data-tab="library"><span>▤</span>知识库</button><button data-tab="review"><span>◷</span>复习</button><button data-tab="settings"><span>⚙</span>备份</button></nav>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="./lessons.js" defer></script><script src="./app.js" defer></script>
+</body></html>
