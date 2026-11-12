@@ -9,12 +9,12 @@ vm.runInNewContext(file("cloud-config.js"), cnfCtx);
 const config = cnfCtx.window.PIECE_CLOUD_CONFIG;
 
 test("frontend and worker JavaScript parses", () => {
-  for (const name of ["app.js", "cloud.js", "cloud-config.js", "lessons.js"]) {
+  for (const name of ["app.js", "cloud.js", "cloud-config.js", "lessons.js", "generated-lessons.js"]) {
     assert.doesNotThrow(() => new vm.Script(file(name), { filename: name }));
   }
   assert.doesNotThrow(() => new vm.Script(file("cloudflare/worker.js").replace("export default", "const deployedWorker = "), { filename: "worker.js" }));
   const html = file("index.html");
-  for (const name of ["cloud.js", "cloud-config.js", "cloud.css", "app.js", "lessons.js"]) {
+  for (const name of ["cloud.js", "cloud-config.js", "cloud.css", "app.js", "lessons.js", "generated-lessons.js"]) {
     assert.ok(html.includes(name), "index.html should include " + name);
   }
 });
