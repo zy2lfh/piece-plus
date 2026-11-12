@@ -1,7 +1,7 @@
 /* Piece Plus v1. Browser-local by design: user outputs never leave this device. */
 (()=>{'use strict';
 const STORAGE='piece_plus_v1',DRAFT='piece_plus_draft_v1',BACKUP='piece_plus_last_backup_v1';
-const L=window.PIECE_LESSONS||[];
+const L=[...(window.PIECE_GENERATED_LESSONS||[]),...(window.PIECE_LESSONS||[])];
 const TOPICS=['日语','科学思维','技术创造','世界知识','经济投资','绘画艺术','生活思考'];
 const GAP=[1,1,3,7,30,90];
 const $=id=>document.getElementById(id);
@@ -25,11 +25,12 @@ function availableLessons(){let v=L.filter(x=>!chosenTopic||x.topic===chosenTopi
 function renderLesson(){
  let s=selectedLesson;if(!s){$('lesson').innerHTML='<p>暂无学习内容</p>';return;}
  const isRead=readLessons.has(s.id);
+ const dateLabelAI=s.generatedAt?new Date(s.generatedAt).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):'';
  $('lesson').innerHTML='<div class="tagline"><span class="pill">'+escape(s.topic)+'</span><span>'+escape(s.level)+'</span><span>◷ '+s.minutes+' 分钟</span><span>'+ (isRead?'✓ 已读':'新内容') +'</span></div>'+
- '<h3>'+escape(s.title)+'</h3><p>'+escape(s.body)+'</p><div class="illustration"><b>举个例子</b><p>'+escape(s.example)+'</p></div><div class="promptbox"><b>✦ 换你来想</b><p>'+escape(s.prompt)+'</p></div>'+
+ '<h3>'+escape(s.title)+'</h3>'+(s.origin==='chatgpt'?'<div class="micro">✦ ChatGPT 生成 · '+escape(dateLabelAI)+' · AI 内容仅供学习，请核验重要事实</div>':'')+'<p>'+escape(s.body)+'</p><div class="illustration"><b>举个例子</b><p>'+escape(s.example)+'</p></div><div class="promptbox"><b>✦ 换你来想</b><p>'+escape(s.prompt)+'</p></div>'+
  '<div class="buttons"><button class="btn subtle" id="markRead">'+(isRead?'✓ 已读 · 再次复习':'标记已读')+'</button><button class="btn primary" id="respondLesson">写下我的理解 →</button></div>';
  let group=availableLessons().filter(x=>x.id!==s.id),matches=group.filter(x=>x.minutes<=chosenTime);if(!matches.length)matches=group;
- $('lessonList').innerHTML=matches.slice(0,8).map(x=>'<button class="lesson-option" data-lesson="'+escape(x.id)+'"><span>'+escape(x.topic)+' · '+x.minutes+' 分钟'+(readLessons.has(x.id)?' · 已读':'')+'</span><b>'+escape(x.title)+'</b></button>').join('')||'<p class="muted">没有其他学习卡。</p>';
+ $('lessonList').innerHTML=matches.slice(0,8).map(x=>'<button class="lesson-option" data-lesson="'+escape(x.id)+'"><span>'+escape(x.topic)+' · '+x.minutes+' 分钟'+(x.origin==='chatgpt'?' · ✦ AI 最新':'')+(readLessons.has(x.id)?' · 已读':'')+'</span><b>'+escape(x.title)+'</b></button>').join('')||'<p class="muted">没有其他学习卡。</p>';
  $('markRead').addEventListener('click',()=>{readLessons.add(s.id);if(persist()){stats();renderLesson();msg('已记录阅读进度');}});
  $('respondLesson').addEventListener('click',()=>{prefillLesson(s.id);tab('write');});
 }
@@ -120,9 +121,9 @@ async function importData(file){
 function bind(){
  document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.tab)));
  document.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>chooseKind(b.dataset.kind)));
- $('timeFilter').addEventListener('click',e=>{let b=e.target.closest('[data-time]');if(!b)return;chosenTime=Number(b.dataset.time);$('timeFilter').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));let v=availableLessons().filter(x=>x.minutes<=chosenTime);chooseLesson((v.length?v:availableLessons())[0].id);});
+ $('timeFilter').addEventListener('click',e=>{let b=e.target.closest('[data-time]');if(!b)return;chosenTime=Number(b.dataset.time);$('timeFilter').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));let v=availableLessons().filter(x=>x.minutes<=chosenTime);if(!(v.length||availableLessons().length))return;chooseLesson((v.length?v:availableLessons())[0].id);});
  $('topicFilter').addEventListener('change',e=>{chosenTopic=e.target.value;let v=availableLessons().filter(x=>x.minutes<=chosenTime);chooseLesson((v.length?v:availableLessons())[0].id);});
- $('surprise').addEventListener('click',()=>{let a=availableLessons().filter(x=>x.id!==selectedLesson?.id);if(!a.length)a=availableLessons();chooseLesson(a[Math.floor(Math.random()*a.length)].id);});
+ $('surprise').addEventListener('click',()=>{let a=availableLessons().filter(x=>x.id!==selectedLesson?.id);if(!a.length)a=availableLessons();if(!a.length)return;chooseLesson(a[Math.floor(Math.random()*a.length)].id);});
  $('lessonList').addEventListener('click',e=>{let b=e.target.closest('[data-lesson]');if(b)chooseLesson(b.dataset.lesson);});
  ['noteBody','noteTitle','noteTopic','noteLesson','noteSource'].forEach(id=>$(id).addEventListener('input',saveDraft));
  $('noteForm').addEventListener('submit',saveNote);$('cancelEdit').addEventListener('click',()=>{clearForm();loadDraft();msg('已取消编辑');});
@@ -136,5 +137,5 @@ function bind(){
  $('exportData').addEventListener('click',exportData);$('exportTop').addEventListener('click',exportData);$('importButton').addEventListener('click',()=>$('importFile').click());
  $('importFile').addEventListener('change',e=>{importData(e.target.files?.[0]);e.target.value='';});
 }
-initChoices();load();loadDraft();bind();chooseLesson(L[0]?.id);stats();renderNotes();renderReview();renderBackup();
+initChoices();load();loadDraft();bind();chooseLesson((L.find(x=>x.minutes<=chosenTime)||L[0])?.id);stats();renderNotes();renderReview();renderBackup();
 })();
