@@ -13,7 +13,7 @@ const send = (data, status=200, origin="") => new Response(JSON.stringify(data),
 export default {
  async fetch(request,env){
    const origin=request.headers.get("origin")||"";
-   if(request.method==="OPTIONS") return ALLOWED_ORIGINS.has(origin)?send({},204,origin):new Response(null,{status:403});
+   if(request.method==="OPTIONS") return ALLOWED_ORIGINS.has(origin)?new Response(null,{status:204,headers:{"access-control-allow-origin":origin,"access-control-allow-headers":"authorization,content-type","access-control-allow-methods":"POST,OPTIONS","vary":"Origin"}}):new Response(null,{status:403});
    if(request.method!=="POST"||new URL(request.url).pathname!=="/feedback")return send({error:"Not found"},404,origin);
    if(!ALLOWED_ORIGINS.has(origin))return send({error:"Origin denied"},403,origin);
    if(!env.SUPABASE_URL||!env.AI)return send({error:"Service not configured"},503,origin);
@@ -29,7 +29,8 @@ export default {
      if(!identity?.id||identity.is_anonymous)return send({error:"账号验证失败"},401,origin);
    }catch{return send({error:"身份验证暂不可用"},503,origin);}
    let input;try{input=await request.json();}catch{return send({error:"请求格式不正确"},400,origin);}
-   const answer=String(input?.answer||"").trim().slice(0,MAX_INPUT);
+   const answer=String(input?.answer||"").trim();
+   if(answer.length>MAX_INPUT)return send({error:"输入太长，请缩短后再试"},413,origin);
    const topic=String(input?.topic||"").trim().slice(0,80);
    const lesson=String(input?.lesson||"").trim().slice(0,MAX_CONTEXT);
    const mode=["feedback","question","deepen"].includes(input?.mode)?input.mode:"feedback";
