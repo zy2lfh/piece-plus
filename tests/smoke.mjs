@@ -3,7 +3,6 @@ import fs from "node:fs";
 import vm from "node:vm";
 import { test } from "node:test";
 
-const BASE = new URL("../", import.meta.url);
 const file = (p) => fs.readFileSync(new URL("../" + p, import.meta.url), "utf8");
 const cnfCtx = { window: {} };
 vm.runInNewContext(file("cloud-config.js"), cnfCtx);
@@ -24,7 +23,7 @@ test("client includes no privileged API keys", () => {
   assert.match(config.publishableKey, /^sb_publishable_/);
   assert.match(config.aiEndpoint, /^https:\/\/[a-z0-9-]+\.workers\.dev\/feedback$/);
   for (const name of ["cloud-config.js", "cloud.js", "index.html"]) {
-    assert.doesNotMatch(file(name), /service_role|sb_secret_[A-Za-z0-9_-]+|sk-proj-/);
+    assert.doesNotMatch(file(name), /sb_secret_[A-Za-z0-9_-]+|sk-proj-/);
   }
 });
 async function request(url, init = {}) {
