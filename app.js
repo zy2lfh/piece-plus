@@ -15,7 +15,7 @@ const dateLabel=s=>{let d=new Date(s);return Number.isNaN(d.getTime())?s:d.toLoc
 const makeId=()=>globalThis.crypto?.randomUUID?.()||String(Date.now())+'-'+Math.random().toString(36).slice(2);
 const msg=text=>{let el=$('toast');el.textContent=text;el.classList.add('show');clearTimeout(msg.timer);msg.timer=setTimeout(()=>el.classList.remove('show'),2500);};
 const load=()=>{try{let d=JSON.parse(localStorage.getItem(STORAGE)||'{}');notes=Array.isArray(d.notes)?d.notes.filter(x=>x&&typeof x.id==='string'&&typeof x.body==='string'):[];readLessons=new Set(Array.isArray(d.read)?d.read:[]);}catch(e){notes=[];readLessons=new Set();}};
-const persist=()=>{try{localStorage.setItem(STORAGE,JSON.stringify({version:1,notes,read:[...readLessons]}));return true;}catch(e){msg('本机保存失败，请检查浏览器存储权限');return false;}};
+const persist=()=>{try{localStorage.setItem(STORAGE,JSON.stringify({version:1,notes,read:[...readLessons]}));window.dispatchEvent(new CustomEvent('piece-plus:changed'));return true;}catch(e){msg('本机保存失败，请检查浏览器存储权限');return false;}};
 const due=n=>!n.review?.due||n.review.due<=today();
 const getLesson=id=>L.find(x=>x.id===id);
 function stats(){$('statLearn').textContent=readLessons.size;$('statWrite').textContent=notes.length;$('statReview').textContent=notes.filter(due).length;}
@@ -78,7 +78,7 @@ function editNote(id){
  $('noteTitle').value=n.title||'';$('noteBody').value=n.body;$('noteTopic').value=n.topic;$('noteLesson').value=getLesson(n.lessonId)?n.lessonId:'';$('noteSource').value=n.source||'';
  chooseKind(kind);$('saveNote').textContent='保存修改 →';$('cancelEdit').classList.remove('hidden');tab('write');
 }
-function removeNote(id){if(!confirm('确定删除这条笔记？删除后无法撤销。'))return;let prev=notes;notes=notes.filter(x=>x.id!==id);if(!persist()){notes=prev;return;}stats();renderNotes();msg('笔记已删除');}
+function removeNote(id){if(!confirm('确定删除这条笔记？删除后无法撤销。'))return;window.PieceCloud?.markDeleted(id);let prev=notes;notes=notes.filter(x=>x.id!==id);if(!persist()){notes=prev;return;}stats();renderNotes();msg('笔记已删除');}
 function renderReview(){
  let v=notes.filter(due).sort((a,b)=>(a.review?.due||'').localeCompare(b.review?.due||''));
  if(!notes.length){$('reviewBox').innerHTML='<div class="empty">先写下第一条理解，明天就能开始主动回忆。</div>';return;}
