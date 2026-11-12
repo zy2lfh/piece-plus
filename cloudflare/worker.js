@@ -28,6 +28,11 @@ export default {
      identity=await check.json();
      if(!identity?.id||identity.is_anonymous)return send({error:"账号验证失败"},401,origin);
    }catch{return send({error:"身份验证暂不可用"},503,origin);}
+   // Approximate rate limit for free shared AI capacity (per user/location).
+   if(env.RATE_LIMITER){
+     const limit=await env.RATE_LIMITER.limit({key:identity.id});
+     if(!limit.success)return send({error:"提问过于频繁，请一分钟后再试"},429,origin);
+   }
    let input;try{input=await request.json();}catch{return send({error:"请求格式不正确"},400,origin);}
    const answer=String(input?.answer||"").trim();
    if(answer.length>MAX_INPUT)return send({error:"输入太长，请缩短后再试"},413,origin);
