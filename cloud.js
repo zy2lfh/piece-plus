@@ -87,6 +87,13 @@ function markDeleted(id){
 function queueSync(){if(!client||!user||busy)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>syncNow(),2000);}
 async function syncNow(manual=false){
  if(!client||!user||busy)return;
+ // A browser profile that previously synced as another account must never
+ // silently upload that account's offline notes into the new account.
+ const ownerKey='piece_plus_cloud_owner_v1',formerOwner=localStorage.getItem(ownerKey);
+ if(formerOwner && formerOwner!==user.id){
+   status('本机曾与另一个账号同步。请先导出备份，并使用原账号登录；为防止私人笔记混入其他账号，已暂停同步。','error');
+   return;
+ }
  busy=true;let syncButton=$('cloudSync');if(syncButton)syncButton.disabled=true;
  if(manual)status('正在合并本机与云端数据……');
  try{
@@ -128,6 +135,7 @@ async function syncNow(manual=false){
    changes.push({user_id:user.id,item_id:'read',item_type:'progress',payload:{read},updated_at:new Date().toISOString(),deleted_at:null});
    for(let i=0;i<changes.length;i+=100){let {error:e}=await client.from('piece_items').upsert(changes.slice(i,i+100),{onConflict:'user_id,item_id'});if(e)throw e;}
    setTombs(tombs);
+   localStorage.setItem('piece_plus_cloud_owner_v1',user.id);
    const changed=JSON.stringify(snapshot.notes||[])!==JSON.stringify(incoming)||JSON.stringify(snapshot.read||[])!==JSON.stringify(read);
    if(changed){
      localStorage.setItem(STORE,JSON.stringify({...snapshot,notes:incoming,read}));
