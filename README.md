@@ -48,6 +48,8 @@ AI 生成内容须先进行去重与事实核验，再通过 GitHub commit/PR �
 - 云端必须使用专用 Supabase 项目。先在 Supabase SQL editor 中应用 `supabase/schema.sql`，确保表开启 RLS。随后通过 dashboard 配置 Auth Site URL 和 Redirect URLs 为 `https://piece-plus.vercel.app`。
 - 获取新项目的 Project URL 和 **publishable key**（浏览器可公开，但必须有 RLS）；填写 `cloud-config.js`。**绝不可提交 secret key、service_role 或第三方私钥。**
 - `cloudflare/worker.js` 部署到 Workers Free 并设置名为 `AI` 的 Workers AI binding；配置 Worker 侧 `SUPABASE_URL` 和 `SUPABASE_PUBLISHABLE_KEY` 环境变量后，在 `cloud-config.js` 写入 `/feedback` 完整地址。
+- **必须在 Supabase 后台手工配置**：Authentication → URL Configuration → Site URL = `https://piece-plus.vercel.app`；Redirect URLs 添加 `https://piece-plus.vercel.app`（也可添加完整预览域名用于单独测试）。MCP 当前没有专门的 Auth 设置更新工具。若未设置，magic link 可能错误跳向 localhost。
+- **免费 SMTP 限制**：Supabase 内置邮件服务仅向 Supabase 项目所在组织的团队成员邮箱发送认证邮件，不适合直接对外开放。个人测试可使用该组织的成员邮箱；若需要任何邮箱登录，请先配置第三方 SMTP 服务并核对免费额度。
 - 使用 Supabase 免费邮箱 magic link 登录，发送邮件可能受到服务商的限额和速率限制；回调域名需先允许。
 - 现有笔记仍保存在浏览器，登录时尝试双向合并，同 ID 按 `updatedAt` 合并，删除使用 tombstone 标记。本机旧版 JSON 可以继续导入和备份。
 - 换账户同步会被阻止以避免意外串号；若需要更换账户或迁移，先导出并在隔离的浏览器配置文件中进行，切勿随意删除 owner 标记。
